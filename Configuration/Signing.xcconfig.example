@@ -1,0 +1,4 @@
+// Copy to Signing.xcconfig.local and fill in your own values.
+// Use the original Team and bundle identifier when updating an installed app.
+DEVELOPMENT_TEAM = YOURTEAMID
+SCHEDULE_BUNDLE_IDENTIFIER = com.yourname.Schedule

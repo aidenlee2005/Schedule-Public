@@ -1,0 +1,361 @@
+// !$*UTF8*$!
+{
+	classes = {
+	};
+	objectVersion = 77;
+	archiveVersion = 1;
+	objects = {
+		E829582A2F52BC470079D6F9 = {
+			dependencies = (
+			);
+			buildConfigurationList = E82958362F52BC480079D6F9;
+			productReference = E829582B2F52BC470079D6F9;
+			productType = "com.apple.product-type.application";
+			packageProductDependencies = (
+				C0D000000000000000000002,
+			);
+			productName = Schedule;
+			isa = PBXNativeTarget;
+			fileSystemSynchronizedGroups = (
+				E829582D2F52BC470079D6F9,
+			);
+			buildPhases = (
+				E82958272F52BC470079D6F9,
+				E82958282F52BC470079D6F9,
+				E82958292F52BC470079D6F9,
+			);
+			name = Schedule;
+			buildRules = (
+			);
+		};
+		E82958372F52BC480079D6F9 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Schedule/Schedule.entitlements;
+				MARKETING_VERSION = 1.0;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SCHEDULE_BUNDLE_IDENTIFIER)";
+				CURRENT_PROJECT_VERSION = 2;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				CODE_SIGN_STYLE = Automatic;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SWIFT_VERSION = 5.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+			};
+			name = Debug;
+		};
+		E82958262F52BC470079D6F9 = {
+			isa = XCConfigurationList;
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+			buildConfigurations = (
+				E82958342F52BC480079D6F9,
+				E82958352F52BC480079D6F9,
+			);
+		};
+		E8F5BF8B2F53FF0000058A19 = {
+			path = System/Library/Frameworks/SwiftUI.framework;
+			isa = PBXFileReference;
+			name = SwiftUI.framework;
+			lastKnownFileType = wrapper.framework;
+			sourceTree = SDKROOT;
+		};
+		E82958272F52BC470079D6F9 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E82958222F52BC470079D6F9 = {
+			isa = PBXGroup;
+			sourceTree = "<group>";
+			children = (
+				C0F000000000000000000001,
+				E829582D2F52BC470079D6F9,
+				E8F5BF882F53FF0000058A19,
+				E829582C2F52BC470079D6F9,
+			);
+		};
+		E82958382F52BC480079D6F9 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Schedule/Schedule.entitlements;
+				MARKETING_VERSION = 1.0;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SCHEDULE_BUNDLE_IDENTIFIER)";
+				CURRENT_PROJECT_VERSION = 2;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				CODE_SIGN_STYLE = Automatic;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SWIFT_VERSION = 5.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+			};
+			name = Release;
+		};
+		C0F000000000000000000001 = {
+			path = Configuration/Signing.xcconfig;
+			isa = PBXFileReference;
+			lastKnownFileType = text.xcconfig;
+			sourceTree = "<group>";
+		};
+		E8F5BF882F53FF0000058A19 = {
+			isa = PBXGroup;
+			name = Frameworks;
+			children = (
+				E8F5BF8B2F53FF0000058A19,
+			);
+			sourceTree = "<group>";
+		};
+		E829582B2F52BC470079D6F9 = {
+			path = Schedule.app;
+			isa = PBXFileReference;
+			includeInIndex = 0;
+			explicitFileType = wrapper.application;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E82958282F52BC470079D6F9 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0D000000000000000000003,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E829582C2F52BC470079D6F9 = {
+			isa = PBXGroup;
+			name = Products;
+			children = (
+				E829582B2F52BC470079D6F9,
+			);
+			sourceTree = "<group>";
+		};
+		E82958232F52BC470079D6F9 = {
+			buildConfigurationList = E82958262F52BC470079D6F9;
+			packageReferences = (
+				C0D000000000000000000001,
+			);
+			targets = (
+				E829582A2F52BC470079D6F9,
+			);
+			minimizedProjectReferenceProxies = 1;
+			developmentRegion = en;
+			knownRegions = (
+				en,
+				Base,
+			);
+			isa = PBXProject;
+			productRefGroup = E829582C2F52BC470079D6F9;
+			projectDirPath = "";
+			attributes = {
+				LastSwiftUpdateCheck = 2630;
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					E829582A2F52BC470079D6F9 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			hasScannedForEncodings = 0;
+			mainGroup = E82958222F52BC470079D6F9;
+			preferredProjectObjectVersion = 77;
+			projectRoot = "";
+		};
+		C0D000000000000000000003 = {
+			isa = PBXBuildFile;
+			productRef = C0D000000000000000000002;
+		};
+		E82958342F52BC480079D6F9 = {
+			baseConfigurationReference = C0F000000000000000000001;
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				COPY_PHASE_STRIP = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_COMMA = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				CLANG_WARN_INT_CONVERSION = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				SDKROOT = iphoneos;
+				CLANG_WARN_EMPTY_BODY = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				CLANG_ENABLE_MODULES = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+			};
+			name = Debug;
+		};
+		E82958292F52BC470079D6F9 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E82958352F52BC480079D6F9 = {
+			baseConfigurationReference = C0F000000000000000000001;
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				SDKROOT = iphoneos;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				CLANG_WARN_COMMA = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				COPY_PHASE_STRIP = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				MTL_FAST_MATH = YES;
+				VALIDATE_PRODUCT = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+			};
+			name = Release;
+		};
+		E829582D2F52BC470079D6F9 = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Schedule;
+			sourceTree = "<group>";
+		};
+		C0D000000000000000000002 = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0D000000000000000000001;
+			productName = SwiftSoup;
+		};
+		C0D000000000000000000001 = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.13.9;
+			};
+		};
+		E82958362F52BC480079D6F9 = {
+			isa = XCConfigurationList;
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+			buildConfigurations = (
+				E82958372F52BC480079D6F9,
+				E82958382F52BC480079D6F9,
+			);
+		};
+	};
+	rootObject = E82958232F52BC470079D6F9;
+}

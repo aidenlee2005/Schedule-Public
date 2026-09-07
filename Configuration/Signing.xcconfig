@@ -1,0 +1,4 @@
+// Public defaults. Personal signing belongs in the ignored local include.
+DEVELOPMENT_TEAM =
+SCHEDULE_BUNDLE_IDENTIFIER = com.example.Schedule
+#include? "Signing.xcconfig.local"
