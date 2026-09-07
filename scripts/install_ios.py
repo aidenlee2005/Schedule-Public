@@ -62,6 +62,11 @@ def configured_bundle_identifier():
     return identifier
 
 
+def configured_watch_identifier():
+    local = SUPPORT / "Signing.json"
+    return json.loads(local.read_text()).get("watchIdentifier") if local.exists() else None
+
+
 def available(device):
     connection = device.get("connectionProperties", {})
     hardware = device.get("hardwareProperties", {})
@@ -70,10 +75,27 @@ def available(device):
             and connection.get("tunnelState") in ("connected", "disconnected"))
 
 
+def available_watch(device):
+    connection = device.get("connectionProperties", {})
+    return (device.get("hardwareProperties", {}).get("deviceType") == "appleWatch"
+            and connection.get("pairingState") == "paired"
+            and connection.get("tunnelState") in ("connected", "disconnected"))
+
+
+def select_watch(devices, requested):
+    matches = [d for d in devices if available_watch(d) and requested in (
+        d["identifier"], d.get("hardwareProperties", {}).get("udid"),
+        d.get("deviceProperties", {}).get("name"))]
+    if len(matches) != 1:
+        raise InstallError("无法唯一确定指定的 Apple Watch。请确认手表已配对、解锁、开启开发者模式，"
+                           "并用 --list-devices 查看标识。")
+    return matches[0]
+
+
 def describe(device):
     name = device.get("deviceProperties", {}).get("name", "Unnamed")
     model = device.get("hardwareProperties", {}).get("marketingName", "iOS device")
-    state = "可连接" if available(device) else "未连接"
+    state = "可连接" if available(device) or available_watch(device) else "未连接"
     return f"{name} · {model} · {state} · {device['identifier']}"
 
 
@@ -137,10 +159,10 @@ def inspect_package(app, device, commands):
     profile = plistlib.loads(raw)
     expiry = profile["ExpirationDate"].replace(tzinfo=timezone.utc)
     if expiry <= datetime.now(timezone.utc):
-        raise InstallError("构建使用的签名已过期。请在 Xcode 中对这台手机运行一次，更新签名后重试。")
+        raise InstallError("构建使用的签名已过期。请在 Xcode 中对这台设备运行一次，更新签名后重试。")
     udid = device["hardwareProperties"]["udid"]
     if udid not in profile.get("ProvisionedDevices", []):
-        raise InstallError("签名未包含所选设备，请先在 Xcode 中对这台手机运行一次。")
+        raise InstallError("签名未包含所选设备，请先在 Xcode 中对这台设备运行一次。")
     identity = {
         "bundleIdentifier": info["CFBundleIdentifier"],
         "executable": info["CFBundleExecutable"],
@@ -316,6 +338,38 @@ def update_app(commands, device, app, identity, run_directory):
     return True
 
 
+def verify_watch_relationship(app, phone_identity):
+    watch_app = app / "Watch/ScheduleWatch.app"
+    with (watch_app / "Info.plist").open("rb") as stream:
+        info = plistlib.load(stream)
+    bundle = phone_identity["bundleIdentifier"]
+    if (info.get("WKCompanionAppBundleIdentifier") != bundle
+            or info.get("CFBundleIdentifier") != bundle + ".watchkitapp"):
+        raise InstallError("手机与手表的应用标识不匹配，已停止安装。请使用 SCHEDULE_BUNDLE_IDENTIFIER 设置共同前缀。")
+    return watch_app
+
+
+def install_watch(commands, device, app, identity, run_directory):
+    say("正在安装 Apple Watch 配套应用…")
+    device_id = device["identifier"]
+    try:
+        commands.device(["device", "install", "app", str(app), "--device", device_id], "install-watch")
+    except InstallError as error:
+        raise InstallError(f"手机已安装，手表安装未完成；手机数据备份保留。\n{error}") from error
+    status = {**identity, "installed": True, "launchSucceeded": False}
+    report = run_directory / "watch-installation.json"
+    write_json(report, status)
+    try:
+        commands.device(["device", "process", "launch", "--device", device_id,
+                         "--terminate-existing", identity["bundleIdentifier"]], "launch-watch")
+    except InstallError:
+        say("手表应用已安装。请解锁手表后打开 Schedule，再在手机上打开 Schedule 完成首次同步。")
+        return
+    status["launchSucceeded"] = True
+    write_json(report, status)
+    say("手机和手表安装完成。两端打开 Schedule 后会同步当前学期。")
+
+
 @contextmanager
 def installer_lock():
     SUPPORT.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -334,6 +388,9 @@ def parse_args(argv=None):
                         help="设备名称、CoreDevice 标识或 UDID（多设备时使用）")
     parser.add_argument("--team", default=os.environ.get("SCHEDULE_TEAM_ID"),
                         help="签名 Team ID，默认读取本机 Signing.json，再沿用 Xcode 工程设置")
+    destination = parser.add_mutually_exclusive_group()
+    destination.add_argument("--watch", help="同时直接安装到指定 Apple Watch；默认读取本机 Signing.json 的 watchIdentifier")
+    destination.add_argument("--phone-only", action="store_true", help="本次仅更新手机，忽略本机保存的手表目标")
     parser.add_argument("--list-devices", action="store_true", help="仅列出设备，不构建或安装")
     parser.add_argument("--build-dir", type=Path,
                         default=Path(os.environ.get("SCHEDULE_BUILD_DIR", str(BUILD))),
@@ -357,12 +414,18 @@ def main(argv=None):
             devices = commands.device(["list", "devices"], "list-devices")["devices"]
             if args.list_devices:
                 for device in devices:
-                    if device.get("hardwareProperties", {}).get("deviceType") in ("iPhone", "iPad"):
+                    if device.get("hardwareProperties", {}).get("deviceType") in ("iPhone", "iPad", "appleWatch"):
                         say(describe(device))
                 return 0
             selected = select_device(devices, args.device or args.device_id, sys.stdin.isatty())
+            watch_id = None if args.phone_only else args.watch or configured_watch_identifier()
+            watch = select_watch(devices, watch_id) if watch_id else None
+            if watch and selected.get("hardwareProperties", {}).get("deviceType") != "iPhone":
+                raise InstallError("Apple Watch 配套应用需要选择与手表配对的 iPhone。")
             if selected.get("deviceProperties", {}).get("developerModeStatus") == "disabled":
                 raise InstallError("请在 iPhone 设置 → 隐私与安全性 → 开发者模式中开启开发者模式，然后重试。")
+            if watch and watch.get("deviceProperties", {}).get("developerModeStatus") == "disabled":
+                raise InstallError("请在 Apple Watch 设置 → 隐私与安全性中开启开发者模式，按提示重启并确认启用，再安装。")
             say(f"目标：{describe(selected)}\n备份和日志：{directory}")
             build_dir = args.build_dir.expanduser().resolve()
             team = configured_team(args.team)
@@ -376,13 +439,27 @@ def main(argv=None):
                 build.append(f"DEVELOPMENT_TEAM={team}")
             if bundle_identifier:
                 build.append(f"SCHEDULE_BUNDLE_IDENTIFIER={bundle_identifier}")
+            if watch:
+                watch_build = list(build)
+                watch_build[watch_build.index("-scheme") + 1] = "ScheduleWatch"
+                watch_build[watch_build.index("-destination") + 1] = f"platform=watchOS,id={watch['hardwareProperties']['udid']}"
+                say(f"正在准备手表签名：{describe(watch)}")
+                commands.run(watch_build, "build-watch")
             say("1/4 正在构建并签名（首次较慢；后续复用编译缓存）…")
             commands.run(build, "build")
             app = build_dir / "Build/Products/Release-iphoneos/Schedule.app"
             identity = inspect_package(app, selected, commands)
             if bundle_identifier and identity["bundleIdentifier"] != bundle_identifier:
                 raise InstallError("构建的应用标识与本机保存的标识不同，已停止以避免安装成另一个应用。")
+            watch_app = verify_watch_relationship(app, identity)
+            watch_identity = inspect_package(watch_app, watch, commands) if watch else None
+            if watch_identity and watch_identity["teamIdentifier"] != identity["teamIdentifier"]:
+                raise InstallError("手机与手表的签名团队不同，已停止安装。")
             update_app(commands, selected, app, identity, directory)
+            if watch:
+                install_watch(commands, watch, watch_app, watch_identity, directory)
+            elif not args.phone_only:
+                say("安装包已包含手表版。可在 iPhone 的 Watch 应用中安装 Schedule；直接安装可使用 --watch <标识>。")
         return 0
     except (InstallError, OSError, ValueError, KeyError, sqlite3.Error) as error:
         say(f"\n已停止：{error}\n不会卸载应用或清空手机数据。故障处理见 README 的本地部署部分。")

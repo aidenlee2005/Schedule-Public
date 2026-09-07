@@ -31,6 +31,7 @@ enum TeachingImporter {
             assignment.importedTitle = item.title; assignment.importedDetail = item.body
             assignment.importedDueDate = item.dueDate ?? chosenDate ?? assignment.importedDueDate
             try context.save()
+            NotificationCenter.default.post(name: Persistence.didSave, object: context)
             return assignment
         } catch { context.rollback(); throw error }
     }

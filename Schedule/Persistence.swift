@@ -2,11 +2,13 @@ import SwiftData
 import SwiftUI
 
 enum Persistence {
+    static let didSave = Notification.Name("Schedule.didSaveDisplayData")
     /// Every user mutation saves explicitly; failed writes restore the last saved state.
     @MainActor
     static func save(_ context: ModelContext, error message: inout String?) -> Bool {
         do {
             try context.save()
+            NotificationCenter.default.post(name: didSave, object: context)
             return true
         } catch {
             context.rollback()

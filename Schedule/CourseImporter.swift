@@ -82,6 +82,7 @@ enum CourseImporter {
                 result.sessions += 1
             }
             try context.save()
+            NotificationCenter.default.post(name: Persistence.didSave, object: context)
             return result
         } catch {
             context.rollback()

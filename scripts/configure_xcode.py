@@ -27,7 +27,7 @@ def main():
     finally:
         if temp_path and os.path.exists(temp_path):
             os.unlink(temp_path)
-    print("已配置 Xcode：手机版沿用本机原 Team 和应用标识。个人配置已被 Git 忽略。")
+    print("已配置 Xcode：手机与手表沿用本机原 Team 和应用标识。个人配置已被 Git 忽略。")
 
 
 if __name__ == "__main__":

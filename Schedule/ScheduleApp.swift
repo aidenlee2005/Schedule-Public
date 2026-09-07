@@ -3,6 +3,7 @@ import SwiftData
 
 @main
 struct ScheduleApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var container: ModelContainer?
     @State private var startupError: String?
 
@@ -26,6 +27,7 @@ struct ScheduleApp: App {
                 }
             }
             .tint(AppTheme.accent)
+            .onChange(of: scenePhase) { _, _ in PhoneWatchSync.shared.refresh() }
         }
     }
 
@@ -37,6 +39,7 @@ struct ScheduleApp: App {
             let opened = try ModelContainer(for: schema, configurations: [config])
             opened.mainContext.autosaveEnabled = false
             try TermManager.prepare(in: opened.mainContext)
+            PhoneWatchSync.shared.configure(container: opened, defaults: AppPreferences.defaults)
             container = opened
             startupError = nil
         } catch {

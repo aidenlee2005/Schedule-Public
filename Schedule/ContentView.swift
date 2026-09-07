@@ -29,5 +29,6 @@ struct ContentView: View {
                 ProgressView("Loading semester…")
             }
         }
+        .onChange(of: activeTermID) { _, _ in PhoneWatchSync.shared.refresh() }
     }
 }
