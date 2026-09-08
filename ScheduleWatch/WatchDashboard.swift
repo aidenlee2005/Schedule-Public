@@ -139,9 +139,9 @@ struct WatchDashboard: View {
                     let weekend = weekday == 1 || weekday == 7
                     emptyState(weekend ? "sun.max" : "calendar", title: agenda.isTomorrow ? "明天暂无课程" : "今天暂无课程")
                 } else {
-                    fittingList {
+                    fittingList(itemCount: agenda.lessons.count) { rowHeight in
                         ForEach(agenda.lessons) { lesson in
-                            lessonRow(lesson)
+                            lessonRow(lesson, height: rowHeight)
                         }
                     }
                 }
@@ -151,19 +151,19 @@ struct WatchDashboard: View {
         .accessibilityIdentifier("watch-day")
     }
 
-    private func lessonRow(_ lesson: WatchLesson) -> some View {
+    private func lessonRow(_ lesson: WatchLesson, height: CGFloat) -> some View {
         let ongoing = lesson.start <= now && now < lesson.end
         let past = lesson.end <= now
         return timelineRow(time: time(lesson.start), secondaryTime: time(lesson.end),
                            title: lesson.name, subtitle: lesson.classroom,
                            timing: "\(formatted(lesson.start, "M月d日 EEEE"))\n\(time(lesson.start))–\(time(lesson.end))",
-                           ongoing: ongoing, past: past)
+                           height: height, ongoing: ongoing, past: past)
     }
 
-    /// Three equal-height summaries fit within the ScrollView's actual viewport.
+    /// The page supplies an explicit height from its actual available space.
     /// Full text remains available in a read-only detail view.
     private func timelineRow(time: String, secondaryTime: String, title: String,
-                             subtitle: String, detail: String = "", timing: String,
+                             subtitle: String, detail: String = "", timing: String, height: CGFloat,
                              ongoing: Bool = false, past: Bool = false) -> some View {
         let summary = [subtitle, detail].filter { !$0.isEmpty }.joined(separator: " · ")
         return NavigationLink {
@@ -194,10 +194,7 @@ struct WatchDashboard: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .containerRelativeFrame(.vertical) { available, _ in
-            // Round down so fractional pixels cannot create a tiny scroll range.
-            floor(max(0, available - 2 * Self.rowSpacing) / 3)
-        }
+        .frame(height: height)
         .background(ongoing ? WatchPalette.pine : .clear, in: RoundedRectangle(cornerRadius: 12))
         .overlay(alignment: .leading) {
             if ongoing {
@@ -232,13 +229,14 @@ struct WatchDashboard: View {
                 let items = snapshot.pendingAssignments(at: now)
                 if items.isEmpty { emptyState("checklist", title: "暂无待完成作业") }
                 else {
-                    fittingList {
+                    fittingList(itemCount: items.count) { rowHeight in
                         ForEach(items) { item in
                             timelineRow(time: item.dueDate < now ? "已逾期" : shortDay(item.dueDate),
                                         secondaryTime: item.dueDate < now ? formatted(item.dueDate, "M/d") : time(item.dueDate),
                                         title: item.title,
                                         subtitle: item.title.contains(item.courseName) ? "" : item.courseName,
-                                        timing: "\(item.dueDate < now ? "已逾期 · " : "截止 ")\(formatted(item.dueDate, "M月d日 HH:mm"))")
+                                        timing: "\(item.dueDate < now ? "已逾期 · " : "截止 ")\(formatted(item.dueDate, "M月d日 HH:mm"))",
+                                        height: rowHeight)
                                 .accessibilityLabel("\(item.title)，\(item.courseName)，\(item.dueDate < now ? "已逾期，" : "")截止 \(formatted(item.dueDate, "M月d日 HH:mm"))")
                         }
                     }
@@ -255,12 +253,12 @@ struct WatchDashboard: View {
                 let items = snapshot.upcomingExams(at: now)
                 if items.isEmpty { emptyState("calendar", title: "未来5天暂无考试") }
                 else {
-                    fittingList {
+                    fittingList(itemCount: items.count) { rowHeight in
                         ForEach(items) { item in
                             timelineRow(time: shortDay(item.date), secondaryTime: time(item.date),
                                         title: item.courseName.isEmpty ? item.title : item.courseName,
                                         subtitle: item.courseName.isEmpty || item.title == item.courseName ? "" : item.title,
-                                        detail: item.detail, timing: formatted(item.date, "M月d日 HH:mm"))
+                                        detail: item.detail, timing: formatted(item.date, "M月d日 HH:mm"), height: rowHeight)
                         }
                     }
                 }
@@ -270,15 +268,32 @@ struct WatchDashboard: View {
         .accessibilityIdentifier("watch-exams")
     }
 
-    private func fittingList<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Self.rowSpacing, content: content)
-                .scrollTargetLayout()
-                .frame(maxWidth: .infinity, alignment: .leading)
+    private func fittingList<Content: View>(itemCount: Int,
+                                            @ViewBuilder content: @escaping (CGFloat) -> Content) -> some View {
+        GeometryReader { geometry in
+            let rowHeight = floor(max(0, geometry.size.height - 2 * Self.rowSpacing) / 3)
+            if itemCount > 3 {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Self.rowSpacing) {
+                        content(rowHeight)
+                    }
+                    .scrollTargetLayout()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .contentMargins(.vertical, 0)
+                .scrollTargetBehavior(.viewAligned)
+                .scrollBounceBehavior(.basedOnSize)
+                .accessibilityIdentifier("watch-scrollable-rows")
+            } else {
+                // No inner ScrollView means touches and the Crown belong entirely
+                // to the vertical TabView, even with fractional layout dimensions.
+                VStack(alignment: .leading, spacing: Self.rowSpacing) {
+                    content(rowHeight)
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
+                .accessibilityIdentifier("watch-static-rows")
+            }
         }
-        .contentMargins(.vertical, 0)
-        .scrollTargetBehavior(.viewAligned)
-        .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.bottom, needsSyncNotice ? Self.syncNoticeHeight : 0)
     }

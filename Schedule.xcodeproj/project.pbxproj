@@ -166,7 +166,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SCHEDULE_BUNDLE_IDENTIFIER)";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -331,7 +331,7 @@
 		C0A000000000000000000018 = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
@@ -356,7 +356,7 @@
 		C0A000000000000000000019 = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
@@ -473,7 +473,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(SCHEDULE_BUNDLE_IDENTIFIER)";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
