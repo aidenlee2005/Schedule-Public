@@ -1,3 +1,9 @@
+![iPhone：课表、日历、作业与计划](.github/previews/01-phone-study.png)
+
+![iPhone：宠物、学期管理、教学网作业导入与资料下载](.github/previews/02-phone-campus.png)
+
+![Apple Watch：进行中、当天课程、未完成作业与考试](.github/previews/03-watch.png)
+
 # Schedule
 
 用 SwiftUI 和 SwiftData 开发的课程表应用，支持 iPhone / iPad（iOS 17.6+）。本分支同时提供 Apple Watch（watchOS 10.0+）只读配套应用。
