@@ -79,14 +79,14 @@ def available(device):
     hardware = device.get("hardwareProperties", {})
     return (hardware.get("deviceType") in ("iPhone", "iPad")
             and connection.get("pairingState") == "paired"
-            and connection.get("tunnelState") in ("connected", "disconnected"))
+            and connection.get("tunnelState") in ("connected", "connecting", "disconnected"))
 
 
 def available_watch(device):
     connection = device.get("connectionProperties", {})
     return (device.get("hardwareProperties", {}).get("deviceType") == "appleWatch"
             and connection.get("pairingState") == "paired"
-            and connection.get("tunnelState") in ("connected", "disconnected"))
+            and connection.get("tunnelState") in ("connected", "connecting", "disconnected"))
 
 
 def select_watch(devices, requested):
@@ -102,7 +102,7 @@ def select_watch(devices, requested):
 def describe(device):
     name = device.get("deviceProperties", {}).get("name", "Unnamed")
     model = device.get("hardwareProperties", {}).get("marketingName", "iOS device")
-    state = {"connected": "调试通道已连接", "disconnected": "已配对，待连接"}.get(
+    state = {"connected": "调试通道已连接", "connecting": "正在连接", "disconnected": "已配对，待连接"}.get(
         device.get("connectionProperties", {}).get("tunnelState"), "未连接")
     return f"{name} · {model} · {state} · {device['identifier']}"
 
