@@ -14,6 +14,8 @@ struct WatchDashboard: View {
     @ObservedObject var store: WatchStore
     let now: Date
     @State private var page = 0
+    private static let rowSpacing: CGFloat = 4
+    private static let syncNoticeHeight: CGFloat = 20
 
     private var snapshot: WatchSnapshot? { store.snapshot }
     private var calendar: Calendar { snapshot?.calendar ?? .current }
@@ -44,14 +46,22 @@ struct WatchDashboard: View {
             }
             .containerBackground(page == 0 ? WatchPalette.canvas : WatchPalette.plain, for: .navigation)
             .overlay(alignment: .bottom) {
-                if let snapshot, store.syncIssue || now.timeIntervalSince(snapshot.generatedAt) > 24 * 60 * 60 {
-                    Text("请打开手机更新数据").font(.system(size: 10))
-                        .foregroundStyle(WatchPalette.secondary).padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(.black.opacity(0.8), in: Capsule()).padding(.bottom, 2)
-                }
+                if needsSyncNotice { syncNotice }
             }
         }
         .tint(WatchPalette.accent)
+    }
+
+    private var needsSyncNotice: Bool {
+        guard let snapshot else { return false }
+        return store.syncIssue || now.timeIntervalSince(snapshot.generatedAt) > 24 * 60 * 60
+    }
+
+    private var syncNotice: some View {
+        Text("请打开手机更新数据").font(.system(size: 10))
+            .foregroundStyle(WatchPalette.secondary).padding(.horizontal, 8)
+            .frame(height: Self.syncNoticeHeight - 2)
+            .background(.black.opacity(0.8), in: Capsule()).padding(.bottom, 2)
     }
 
     private var heroPage: some View {
@@ -146,47 +156,74 @@ struct WatchDashboard: View {
         let past = lesson.end <= now
         return timelineRow(time: time(lesson.start), secondaryTime: time(lesson.end),
                            title: lesson.name, subtitle: lesson.classroom,
+                           timing: "\(formatted(lesson.start, "M月d日 EEEE"))\n\(time(lesson.start))–\(time(lesson.end))",
                            ongoing: ongoing, past: past)
     }
 
-    /// Shared rhythm for courses, assignments and exams: when on the left,
-    /// what and where on the right. Long content grows instead of shrinking.
+    /// Three equal-height summaries fit within the ScrollView's actual viewport.
+    /// Full text remains available in a read-only detail view.
     private func timelineRow(time: String, secondaryTime: String, title: String,
-                             subtitle: String, detail: String = "",
+                             subtitle: String, detail: String = "", timing: String,
                              ongoing: Bool = false, past: Bool = false) -> some View {
-        return VStack(alignment: .leading, spacing: 5) {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(time)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded)).monospacedDigit()
-                    .foregroundStyle(past ? WatchPalette.secondary : WatchPalette.accent)
-                    .frame(width: 36, alignment: .leading)
-                Text(title).font(.system(size: 14, weight: .semibold))
-                    .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                    .foregroundStyle(past ? WatchPalette.secondary : .white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        let summary = [subtitle, detail].filter { !$0.isEmpty }.joined(separator: " · ")
+        return NavigationLink {
+            timelineDetail(title: title, subtitle: subtitle, detail: detail, timing: timing)
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(time)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded)).monospacedDigit()
+                        .foregroundStyle(past ? WatchPalette.secondary : WatchPalette.accent)
+                        .frame(width: 36, alignment: .leading)
+                    Text(title).font(.system(size: 14, weight: .semibold))
+                        .lineLimit(1)
+                        .foregroundStyle(past ? WatchPalette.secondary : .white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(secondaryTime).font(.system(size: 10, design: .rounded)).monospacedDigit()
+                        .frame(width: 36, alignment: .leading)
+                    Text(summary.isEmpty ? " " : summary)
+                        .font(.system(size: 11)).lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .foregroundStyle(WatchPalette.secondary)
             }
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(secondaryTime).font(.system(size: 10, design: .rounded)).monospacedDigit()
-                    .frame(width: 36, alignment: .leading)
-                Text(subtitle.isEmpty ? " " : subtitle)
-                    .font(.system(size: 11)).lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .foregroundStyle(WatchPalette.secondary)
-            if !detail.isEmpty {
-                Text(detail).font(.system(size: 11)).foregroundStyle(WatchPalette.secondary)
-                    .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                    .padding(.leading, 48)
-            }
+            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
-        .padding(.horizontal, 8).padding(.vertical, 7)
+        .buttonStyle(.plain)
+        .containerRelativeFrame(.vertical) { available, _ in
+            // Round down so fractional pixels cannot create a tiny scroll range.
+            floor(max(0, available - 2 * Self.rowSpacing) / 3)
+        }
         .background(ongoing ? WatchPalette.pine : .clear, in: RoundedRectangle(cornerRadius: 12))
         .overlay(alignment: .leading) {
             if ongoing {
-                Capsule().fill(WatchPalette.accent).frame(width: 2).padding(.vertical, 9)
+                Capsule().fill(WatchPalette.accent).frame(width: 2).padding(.vertical, 7)
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityHint("查看完整信息")
+    }
+
+    private func timelineDetail(title: String, subtitle: String, detail: String, timing: String) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(title).font(.title3.weight(.semibold))
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(timing).font(.system(.body, design: .rounded)).monospacedDigit()
+                    .foregroundStyle(WatchPalette.accent)
+                if !subtitle.isEmpty { Text(subtitle).font(.body).foregroundStyle(WatchPalette.secondary) }
+                if !detail.isEmpty { Text(detail).font(.body).foregroundStyle(WatchPalette.secondary) }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 10).padding(.vertical, 8)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .navigationTitle("")
+        .containerBackground(.black, for: .navigation)
     }
 
     private var assignmentPage: some View {
@@ -200,7 +237,8 @@ struct WatchDashboard: View {
                             timelineRow(time: item.dueDate < now ? "已逾期" : shortDay(item.dueDate),
                                         secondaryTime: item.dueDate < now ? formatted(item.dueDate, "M/d") : time(item.dueDate),
                                         title: item.title,
-                                        subtitle: item.title.contains(item.courseName) ? "" : item.courseName)
+                                        subtitle: item.title.contains(item.courseName) ? "" : item.courseName,
+                                        timing: "\(item.dueDate < now ? "已逾期 · " : "截止 ")\(formatted(item.dueDate, "M月d日 HH:mm"))")
                                 .accessibilityLabel("\(item.title)，\(item.courseName)，\(item.dueDate < now ? "已逾期，" : "")截止 \(formatted(item.dueDate, "M月d日 HH:mm"))")
                         }
                     }
@@ -222,7 +260,7 @@ struct WatchDashboard: View {
                             timelineRow(time: shortDay(item.date), secondaryTime: time(item.date),
                                         title: item.courseName.isEmpty ? item.title : item.courseName,
                                         subtitle: item.courseName.isEmpty || item.title == item.courseName ? "" : item.title,
-                                        detail: item.detail)
+                                        detail: item.detail, timing: formatted(item.date, "M月d日 HH:mm"))
                         }
                     }
                 }
@@ -232,13 +270,17 @@ struct WatchDashboard: View {
         .accessibilityIdentifier("watch-exams")
     }
 
-    private func fittingList<Content: View>(spacing: CGFloat = 6, @ViewBuilder content: () -> Content) -> some View {
+    private func fittingList<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: spacing, content: content)
+            VStack(alignment: .leading, spacing: Self.rowSpacing, content: content)
+                .scrollTargetLayout()
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .contentMargins(.vertical, 0)
+        .scrollTargetBehavior(.viewAligned)
         .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.bottom, needsSyncNotice ? Self.syncNoticeHeight : 0)
     }
 
     private func emptyState(_ symbol: String, title: String) -> some View {
