@@ -31,6 +31,13 @@ class InstallError(Exception):
     pass
 
 
+class CommandError(InstallError):
+    def __init__(self, label, returncode, log, output):
+        self.returncode, self.output = returncode, output
+        tail = "\n".join(output.splitlines()[-12:])
+        super().__init__(f"{label} 失败（退出码 {returncode}）。\n{tail}\n详情：{log}")
+
+
 def say(message):
     print(message, flush=True)
 
@@ -95,7 +102,8 @@ def select_watch(devices, requested):
 def describe(device):
     name = device.get("deviceProperties", {}).get("name", "Unnamed")
     model = device.get("hardwareProperties", {}).get("marketingName", "iOS device")
-    state = "可连接" if available(device) or available_watch(device) else "未连接"
+    state = {"connected": "调试通道已连接", "disconnected": "已配对，待连接"}.get(
+        device.get("connectionProperties", {}).get("tunnelState"), "未连接")
     return f"{name} · {model} · {state} · {device['identifier']}"
 
 
@@ -136,18 +144,54 @@ class Commands:
             result = subprocess.run([str(a) for a in args], cwd=ROOT,
                                     stdout=output, stderr=subprocess.STDOUT)
         if result.returncode:
-            tail = "\n".join(log.read_text(errors="replace").splitlines()[-12:])
-            raise InstallError(f"{label} 失败（退出码 {result.returncode}）。\n{tail}\n详情：{log}")
+            raise CommandError(label, result.returncode, log, log.read_text(errors="replace"))
         return log.read_bytes()
 
-    def device(self, args, label):
+    def device(self, args, label, timeout=180):
         report = self.directory / f"{self.serial + 1:02d}-{label}.json"
-        self.run(["xcrun", "devicectl", *args, "--quiet", "--timeout", "180",
+        self.run(["xcrun", "devicectl", *args, "--quiet", "--timeout", str(timeout),
                   "--json-output", report], label)
         data = json.loads(report.read_text())
         if data.get("info", {}).get("outcome") != "success":
             raise InstallError(f"{label} 未成功，已停止。详情：{report}")
         return data["result"]
+
+
+def ensure_device_ready(commands, device):
+    is_watch = device.get("hardwareProperties", {}).get("deviceType") == "appleWatch"
+    kind = "手表" if is_watch else "手机"
+    label = "check-watch-connection" if is_watch else "check-phone-connection"
+    say(f"正在检查{kind}连接和锁屏状态（最多 30 秒）…")
+    try:
+        state = commands.device(["device", "info", "lockState", "--device", device["identifier"]],
+                                label, timeout=30)
+    except InstallError as error:
+        guidance = ("请解锁手表，开启 Mac、手机和手表的 Wi-Fi，并确认本地网络互通。"
+                    if is_watch else "请解锁手机，重新连接数据线并信任此电脑。")
+        raise InstallError(f"{kind}调试通道未连通。{guidance}"
+                           "可在 Xcode → Window → Devices and Simulators 查看设备准备状态。\n"
+                           f"尚未开始备份或安装。\n{error}") from error
+    if state.get("passcodeRequired") is True:
+        raise InstallError(f"{kind}仍处于锁屏状态。请解锁并保持连接后重试；尚未开始备份或安装。")
+    if state.get("passcodeRequired") is not False:
+        raise InstallError(f"无法确认{kind}锁屏状态，尚未开始备份或安装。请在 Xcode 中检查设备连接。")
+
+
+def build_for_device(commands, build, label, platform):
+    try:
+        commands.run(build, label)
+    except CommandError as error:
+        # Only a destination preparation timeout can use another build destination.
+        # Compilation/signing failures must stop; all resulting profiles are still
+        # verified against the selected physical devices before installation.
+        if (error.returncode != 70 or
+                "Timed out waiting for all destinations matching the provided destination specifier"
+                not in error.output):
+            raise
+        say("Xcode 等待设备准备超时，改用通用设备目标构建；安装前仍会核对签名和设备标识…")
+        generic = list(build)
+        generic[generic.index("-destination") + 1] = f"generic/platform={platform}"
+        commands.run(generic, label + "-generic")
 
 
 def inspect_package(app, device, commands):
@@ -430,6 +474,9 @@ def main(argv=None):
             build_dir = args.build_dir.expanduser().resolve()
             team = configured_team(args.team)
             bundle_identifier = configured_bundle_identifier()
+            ensure_device_ready(commands, selected)
+            if watch:
+                ensure_device_ready(commands, watch)
             build = ["xcodebuild", "-project", "Schedule.xcodeproj", "-scheme", "Schedule",
                      "-configuration", "Release", "-destination",
                      f"platform=iOS,id={selected['hardwareProperties']['udid']}",
@@ -444,9 +491,9 @@ def main(argv=None):
                 watch_build[watch_build.index("-scheme") + 1] = "ScheduleWatch"
                 watch_build[watch_build.index("-destination") + 1] = f"platform=watchOS,id={watch['hardwareProperties']['udid']}"
                 say(f"正在准备手表签名：{describe(watch)}")
-                commands.run(watch_build, "build-watch")
+                build_for_device(commands, watch_build, "build-watch", "watchOS")
             say("1/4 正在构建并签名（首次较慢；后续复用编译缓存）…")
-            commands.run(build, "build")
+            build_for_device(commands, build, "build", "iOS")
             app = build_dir / "Build/Products/Release-iphoneos/Schedule.app"
             identity = inspect_package(app, selected, commands)
             if bundle_identifier and identity["bundleIdentifier"] != bundle_identifier:
